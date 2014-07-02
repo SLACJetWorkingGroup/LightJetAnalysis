@@ -21,55 +21,58 @@ using std::string;
 using std::map;
 using namespace std;
 
-int main(int argc, char* argv[]){
-    // argument parsing  ------------------------
+#define OUTPUT_NAME "out.root"
+#define N_ANALYZED_EVENTS 1000
+#define DATA_FILE_NAME "/atlas/output/pnef/skimmed.20140609.17.13_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root"
+
+static inline void init(char* data_file_name, int argc, char* argv);
+
+static inline void init(char* data_file_name, int argc, char* argv) 
+{
+      // argument parsing  ------------------------
     cout << "Called as: ";
-    for(int ii=0; ii<argc; ++ii){
-        cout << argv[ii] << " ";
+    for(int i = 0; i < argc; i++) {
+        cout << argv[i] << " ";
     }
     cout << endl;
 
-    // agruments ----------------------------------------------
-    int fDebug         = 0;
-    string infile      = "/atlas/output/pnef/skimmed.20140609.17.13_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root";
-    string outName     = "test.root";
-    int nevents        = 10;
-
-    #if boostflag==1 // command line parsing if boost is installed 
+   /*
+    #if boostflag == 1 // command line parsing if boost is installed 
     po::options_description desc("Allowed options");
     desc.add_options()
       ("help", "produce help message")
-      ("Debug",          po::value<int>(&fDebug) ->default_value(0) ,     "Debug flag")
-      ("InFlie",         po::value<string>(&infile) ->default_value("/atlas/output/pnef/skimmed.20140609.17.13_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root") ,     "input file")
-      ("OutFile",        po::value<string>(&outName)->default_value("test.root"), "output file name")
-      ("NEvents",        po::value<int>(&nevents)->default_value(10), "number of events to analyze")
+      ("Debug",          po::value<int>(&debug)->default_value(false) ,     "Debug flag")
+      ("InFile",         po::value<string>(&data_file_name)->default_value(DATA_FILE_NAME) , "input file")  //default value of file set to macro
+      ("OutFile",        po::value<string>(&output_name)->default_value(OUTPUT_NAME), "output file name")
+      ("NEvents",        po::value<int>(&nevents)->default_value(N_ANALYZED_EVENTS), "number of events to analyze") //default number of events for which to explicitly make TTrees set to macro
       ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
     po::notify(vm);
-
-    if (vm.count("help")>0){
+    if (vm.count("help") > 0){
         cout << desc << "\n";
         return 1;
     }
     #endif
+    */
     //------
 
    //-------------------------
-   TFile* tf = new TFile(infile.c_str(), "open");
-   TTree* tt = (TTree*) tf->Get("EventTree");
+}
 
-   LightJetAnalysis* analysis = new LightJetAnalysis(tt);
-   analysis->Debug(fDebug);
-   analysis->SetOutName(outName);
-   analysis->SetNEvents(nevents);
-   analysis->Begin();
-   analysis->Loop();
-   analysis->End();
-   // ----------------------
+int main(int argc, char* argv[])
+{
+  const char* data_file_name = DATA_FILE_NAME;
 
-   // that was it
-   delete analysis;
+  TFile* tf = new TFile(data_file_name, "open");
+  TTree* tt = (TTree*) tf->Get("EventTree");
 
-   return 0;
+  LightJetAnalysis* analysis = new LightJetAnalysis(tt);
+  analysis->Begin();
+  analysis->Loop();
+  analysis->End();
+
+  delete analysis;
+  
+  return 0;
 }

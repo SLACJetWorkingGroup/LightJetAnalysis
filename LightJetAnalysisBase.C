@@ -3,7 +3,10 @@
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+#include <assert.h>
 
+
+/*Precondition: this loop must not exceed 3 billion entries*/
 void LightJetAnalysisBase::Loop()
 {
 //   In a ROOT session, you can do:
@@ -29,15 +32,35 @@ void LightJetAnalysisBase::Loop()
 // METHOD2: replace line
 //    fChain->GetEntry(jentry);       //read all branches
 //by  b_branchname->GetEntry(ientry); //read only this branch
-   if (fChain == 0) return;
+   
+
+
+   /*!!!!!!!!!!if (fChain == 0) return;
 
    Long64_t nentries = fChain->GetEntriesFast();
 
    Long64_t nbytes = 0, nb = 0;
+
    for (Long64_t jentry=0; jentry<nentries;jentry++) {
+      
       Long64_t ientry = LoadTree(jentry);
       if (ientry < 0) break;
-      nb = fChain->GetEntry(jentry);   nbytes += nb;
+      nb = fChain->GetEntry(jentry);  
+      nbytes += nb;
+!!!!!!*/
       // if (Cut(ientry) < 0) continue;
+    if (fChain == 0) return;
+
+   	Int_t n_entries = fChain->GetEntriesFast(); //number of entires in TTree called fchain
+
+    Int_t nbytes = 0, nb = 0;
+
+    for (Int_t j = 0; j < n_entries; j++) {
+      
+      assert(LoadTree(j) >= 0); //ensures elements of TTree are sufficiently formed
+      nb = fChain->GetEntry(j);  
+      nbytes += nb;
+
    }
+
 }
