@@ -60,11 +60,12 @@ using namespace ROOT;
 #define N_JETS_MAX 10
 #define NPV_MAX 100
 
-#define OUTPUT_NAME "1_sigma.root"  //these two constants must be change simultaneously
-#define N_SIGMA 1
+#define OUTPUT_NAME "0_sigma.root"  //these two constants must be change simultaneously
+#define N_SIGMA 0
 #define PT_THRESHOLD 20  //minimum momentum (in GeV) for a group of clusters to be considered a jet
 #define TRUTH_PT_THRESHOLD 10
 
+#define ETA_ACCURACY_RANGE 2.4 //should be 2.4
 //event specific rho, area of each jet, sigma per event
 
 //pt - (rho + sigma)sqrt(area)
@@ -119,7 +120,7 @@ TH1F* LightJetAnalysis::init_l_hist(string data_type, int min, int max, string u
 
  inline void LightJetAnalysis::init_2D_npv_hist()
  {
-  npv_histo = new TH2F("NPV_2D", "Number of Jets and Primary Vertices Across Collision Events", N_BINS, 0, NPV_MAX, N_BINS, 0, 200); //recent change
+  npv_histo = new TH2F("NPV_2D", "Number of Jets and Primary Vertices Across Collision Events", N_BINS, 0, 60, N_BINS, 0, 8); //recent change
   npv_histo->SetOption("COL");
   npv_histo->SetXTitle("Number of Primary Vertices");
   npv_histo->SetYTitle("Number of Jets");
@@ -127,7 +128,7 @@ TH1F* LightJetAnalysis::init_l_hist(string data_type, int min, int max, string u
 
 inline void LightJetAnalysis::init_truth_hist()
 {
-  truth_2d_histo = new TH2F("Truth_2D", "Density of Pt and NPV Values of Reconstructed-Truth Jet Matches", N_BINS, 0, NPV_MAX, N_BINS, 0, 100); //recent change
+  truth_2d_histo = new TH2F("Truth_2D", "Density of Pt and NPV Values of Reconstructed-Truth Jet Matches", N_BINS, 0, 60, N_BINS, -30, 30); //recent change
   truth_2d_histo->SetOption("COL");
   truth_2d_histo->SetXTitle("Number of Primary Vertices");
   truth_2d_histo->SetYTitle("Difference Between Pt Truth and Pt Reconstructed");
@@ -137,7 +138,7 @@ TH1F* LightJetAnalysis::get_truth_hist(int min_pt, int max_pt)
 {
   char buffer[80];
   sprintf(buffer, "Reconstructed-Truth Jet Matches For Truth Jets Between %d GeV and %d GeV\n", min_pt, max_pt);
-  TH1F* histo = new TH1F("Jet Matches", buffer, N_BINS, 0, 100); //recent change
+  TH1F* histo = new TH1F("Jet Matches", buffer, N_BINS, -25, 25); //recent change
   histo->SetXTitle("Pt Recon. - Pt Truth (GeV)");
   histo->SetYTitle("Frequency of Pt Values");
   return histo;
@@ -147,7 +148,6 @@ TH1F* LightJetAnalysis::get_truth_hist(int min_pt, int max_pt)
 // Begin method
 void LightJetAnalysis::Begin() 
 {   
-  cout << "NOTE: Negative energy values found in data" << endl;
     // create output file 
   fp_out = new TFile(OUTPUT_NAME, "RECREATE");   
   init_rho_hist();
@@ -155,13 +155,18 @@ void LightJetAnalysis::Begin()
   jet_dist_a = init_jet_hist(PT_MIN_A);
   jet_dist_b = init_jet_hist(PT_MIN_B);
   jet_dist_c = init_jet_hist(PT_MIN_C);
-  leading_jet_pt = init_l_hist("Pt", -50, 50, "(GeV)");  //recent change
+  leading_jet_pt = init_l_hist("Pt", 15, 65, "(GeV)");  //recent change
   leading_jet_eta = init_l_hist("Eta", (-1) * RAPIDITY_SPECTRUM, RAPIDITY_SPECTRUM);  //recent change
   init_2D_npv_hist();
   init_truth_hist();
   truth_histo_a = get_truth_hist(TRUTH_DIF_A, TRUTH_DIF_B);
   truth_histo_b = get_truth_hist(TRUTH_DIF_B, TRUTH_DIF_C);
   arr = (bin*)calloc(N_BINS, sizeof(bin));
+
+
+  jet_areas = new TH1F("Jet_Areas", "Jet areas Across All Events", N_BINS, 0, 3);
+  jet_areas->SetXTitle("Area of individual jet");
+  jet_areas->SetYTitle("Frequency of Area Value");
 }
 
 /*inline bool in_rapidity_range(int eta)
@@ -206,6 +211,11 @@ void LightJetAnalysis::End()
     truth_histo_b->Write("Truth_B");
     
     write_npv_avg();
+
+    jet_areas->Write("Jet areas");
+
+
+    delete jet_areas;
 
      //TCanvas* c1 = new TCanvas("c1", "X Profile", 200, 200, 200 , 200);
 
@@ -263,11 +273,10 @@ void LightJetAnalysis::Loop()
       cl_E = cl_lc_E;
     }
     for(Long64_t i = 0; i < num_clust; i++) {  //iterate through the total number of jets
-        PseudoJet cl(cl_px[i], cl_py[i], cl_pz[i], cl_E[i]);
-        if(cl.E() < 0){
-          std::cout << "negative energy cluster found" <<  cl.E() << std::endl;
+        if(cl_E[i] >= 0){
+          PseudoJet cl(cl_px[i], cl_py[i], cl_pz[i], cl_E[i]);
+           clusters.push_back(cl);
         }
-        clusters.push_back(cl);
     }
  }
 
@@ -283,7 +292,7 @@ inline void LightJetAnalysis::calc_rho_sigma(double& rho, double& sigma, vector<
 
 void LightJetAnalysis::calc_sub_jets(double& rho, double& sigma, vector<PseudoJet>& clusters, vector<PseudoJet>& sub_jets, bool isTruth)
 { 
-  double correction = rho + N_SIGMA * sigma;
+  double correction = rho + (N_SIGMA * sigma);
   int min_pt = PT_THRESHOLD;
   if(isTruth) {
     correction = 0;
@@ -302,6 +311,7 @@ void LightJetAnalysis::calc_sub_jets(double& rho, double& sigma, vector<PseudoJe
     if(subtracted_pt > min_pt) {
       sub_jet.reset_momentum_PtYPhiM(subtracted_pt, jets[i].rapidity(), jets[i].phi_std(), jets[i].m());
       sub_jets.push_back(sub_jet);  //subtract from original jet 
+      jet_areas->Fill(jets[i].area());   //RECENT
     }
   }
 
@@ -312,7 +322,7 @@ void inline LightJetAnalysis::graph_jet_dist(vector<PseudoJet>& sub_jets)
   int sz = sub_jets.size();
   for(int i = 0; i < sz; i++) {
     PseudoJet j = sub_jets[i];
-    //if(j.pt() > PT_THRESHOLD) {
+    //ifarea(j.pt() > PT_THRESHOLD) {
       jet_dist_a->Fill(j.pt());
       jet_dist_b->Fill(j.pt());
       jet_dist_c->Fill(j.pt());
@@ -329,42 +339,45 @@ void inline LightJetAnalysis::graph_leading_jets(vector<PseudoJet>& sub_jets)
   }
 }
 
-/*int inline LightJetAnalysis::n_nontrivial_jets(vector<PseudoJet>& sub_jets)
+int inline LightJetAnalysis::n_nontrivial_jets(vector<PseudoJet>& sub_jets)
 {
   int count = 0;
   size_t sz = sub_jets.size();
   for(unsigned int i = 0; i < sz; i++) {
-    if(sub_jets[i].pt() > PT_THRESHOLD) {
+    if(sub_jets[i].rapidity() > -ETA_ACCURACY_RANGE && sub_jets[i].rapidity() < ETA_ACCURACY_RANGE) {
       count++;
     }
   }
   return count;
-}*/
+}
 
 void inline LightJetAnalysis::graph_truth(const vector<PseudoJet>& sub_jets, const vector<PseudoJet>& truth_jets)
 {
   for(unsigned int i = 0; i < sub_jets.size(); i++) {
     double min = -1;
     signed int minIndex = -1;
-    for(unsigned int j = 0; j < truth_jets.size(); j++) {
-      double deltR = sub_jets[i].delta_R(truth_jets[j]);
-      //cout << "DeltR = " << deltR << endl;
-      if((min == -1) || (deltR < min)) {
-        min = deltR;
-        minIndex = j;
+    if(sub_jets[i].rapidity() > -ETA_ACCURACY_RANGE && sub_jets[i].rapidity() < ETA_ACCURACY_RANGE) {
+        for(unsigned int j = 0; j < truth_jets.size(); j++) {
+          double deltR = sub_jets[i].delta_R(truth_jets[j]);
+          //cout << "DeltR = " << deltR << endl;
+          if((min == -1) || (deltR < min)) {
+            min = deltR;
+            minIndex = j;
+          }
+        }
+        if(min < JET_SEARCH_RADIUS && minIndex >= 0) {
+          //cout << "--------------Match found---------------" << endl;
+          double truth_pt = truth_jets[minIndex].pt();
+          truth_2d_histo->Fill(NPV, sub_jets[i].pt() - truth_pt);
+          if(truth_pt > TRUTH_DIF_A && truth_pt < TRUTH_DIF_B) {
+            truth_histo_a->Fill(sub_jets[i].pt() - truth_pt);
+          }
+          if(truth_pt > TRUTH_DIF_B && truth_pt < TRUTH_DIF_C) {
+            truth_histo_b->Fill(sub_jets[i].pt() - truth_pt);
+          }
+          //cout << "difference is " << sub_jets[i].pt() - truth_pt << endl;
+        }
       }
-    }
-    if(min < JET_SEARCH_RADIUS && minIndex >= 0) {
-      //cout << "--------------Match found---------------" << endl;
-      double truth_pt = truth_jets[minIndex].pt();
-      truth_2d_histo->Fill(NPV, sub_jets[i].pt() - truth_pt);
-      if(truth_pt > TRUTH_DIF_A && truth_pt < TRUTH_DIF_B) {
-        truth_histo_a->Fill(sub_jets[i].pt() - truth_pt);
-      }
-      if(truth_pt > TRUTH_DIF_B && truth_pt < TRUTH_DIF_C) {
-        truth_histo_b->Fill(sub_jets[i].pt() - truth_pt);
-      }
-    }
   }
 }
 
@@ -398,14 +411,17 @@ void LightJetAnalysis::Analyze()
   graph_leading_jets(sub_jets);
 
 
-  npv_histo->Fill(NPV, sub_jets.size());
+  int njets_x = n_nontrivial_jets(sub_jets);
+
+  npv_histo->Fill(NPV, njets_x);  //here
 
   graph_truth(sub_jets, truth_jets);
 
   int index = (double)NPV / NPV_MAX * N_BINS;
   if(index < N_BINS) {
     arr[index].nevents++;
-    arr[index].total_jets += sub_jets.size();
+    arr[index].total_jets += njets_x;  //here
   }
+
 
 }
