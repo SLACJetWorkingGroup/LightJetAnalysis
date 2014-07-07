@@ -54,8 +54,8 @@ using namespace ROOT;
 #define PT_MIN_C 50
 
 #define TRUTH_DIF_A 20
-#define TRUTH_DIF_B 30
-#define TRUTH_DIF_C 40
+#define TRUTH_DIF_B 40
+#define TRUTH_DIF_C 50
 
 #define N_JETS_MAX 10
 #define NPV_MAX 100
@@ -155,7 +155,7 @@ void LightJetAnalysis::Begin()
   jet_dist_a = init_jet_hist(PT_MIN_A);
   jet_dist_b = init_jet_hist(PT_MIN_B);
   jet_dist_c = init_jet_hist(PT_MIN_C);
-  leading_jet_pt = init_l_hist("Pt", 15, 65, "(GeV)");  //recent change
+  leading_jet_pt = init_l_hist("Pt", 15, 80, "(GeV)");  //recent change
   leading_jet_eta = init_l_hist("Eta", (-1) * RAPIDITY_SPECTRUM, RAPIDITY_SPECTRUM);  //recent change
   init_2D_npv_hist();
   init_truth_hist();
@@ -200,9 +200,9 @@ void LightJetAnalysis::End()
     //rho_histo->Fit("gauss");
     rho_histo->Write("Rho");
     sigma_histo->Write("Sigma");
-    jet_dist_a->Write("Jet Distribution A");
-    jet_dist_b->Write("Jet Distribution B");
-    jet_dist_c->Write("Jet Distribution C");
+    //jet_dist_a->Write("Jet Distribution A");
+    //jet_dist_b->Write("Jet Distribution B");
+    //jet_dist_c->Write("Jet Distribution C");
     leading_jet_pt->Write("Leading_Jet_Pt");
     leading_jet_eta->Write("Leading_Jet_Eta");
     npv_histo->Write("NPV_vs_Number_Jets");
@@ -309,7 +309,7 @@ void LightJetAnalysis::calc_sub_jets(double& rho, double& sigma, vector<PseudoJe
     PseudoJet sub_jet;
     double subtracted_pt = jets[i].pt() - (correction) * jets[i].area();  
     if((signed)subtracted_pt > min_pt) {
-      sub_jet.reset_momentum_PtYPhiM(subtracted_pt, jets[i].rapidity(), jets[i].phi_std(), jets[i].m()); 
+      sub_jet.reset_momentum_PtYPhiM(subtracted_pt, jets[i].rapidity(), jets[i].phi(), jets[i].m()); 
       sub_jets.push_back(sub_jet);  //subtract from original jet 
       jet_areas->Fill(jets[i].area());   //RECENT
     }
@@ -353,26 +353,45 @@ int inline LightJetAnalysis::n_nontrivial_jets(vector<PseudoJet>& sub_jets)
 
 void inline LightJetAnalysis::graph_truth(const vector<PseudoJet>& sub_jets, const vector<PseudoJet>& truth_jets)
 {
+  cout << "---------------------------" << endl;
+  cout << "njets = " << sub_jets.size() << "; ntruth = " << truth_jets.size() << endl;
+  for(size_t i = 0; i < sub_jets.size(); i++) {
+    cout << "jet pt = " << sub_jets[i].pt() << "; jet eta = " << sub_jets[i].rapidity() << endl;
+  }
+
+
+  cout << "+++++++++++++++++++++++++++" << endl;
+
+  for(size_t i = 0; i < truth_jets.size(); i++) {
+      cout << "truth pt = " << truth_jets[i].pt() << "; truth eta = " << truth_jets[i].rapidity() << endl;
+  }
+   
+
   for(unsigned int i = 0; i < sub_jets.size(); i++) {
     double min = -1;
     signed int minIndex = -1;
     if(sub_jets[i].rapidity() > -ETA_ACCURACY_RANGE && sub_jets[i].rapidity() < ETA_ACCURACY_RANGE) {
         for(unsigned int j = 0; j < truth_jets.size(); j++) {
           double deltR = sub_jets[i].delta_R(truth_jets[j]);
-          //cout << "DeltR = " << deltR << endl;
+          cout << "DeltR = " << deltR << endl;
+          cout << "my calculation of deltR = " << sqrt(pow(sub_jets[i].phi() - truth_jets[j].phi(), 2) + pow(sub_jets[i].rapidity() - truth_jets[j].rapidity(), 2)) << endl;
           if((min == -1) || (deltR < min)) {
             min = deltR;
             minIndex = j;
+             cout << "min now = " << min << endl;
           }
         }
+        cout << " 0 0 0 0 0 0 0 0 0 0 0 0 " << endl;
         if(min < JET_SEARCH_RADIUS && minIndex >= 0) {
           //cout << "--------------Match found---------------" << endl;
           double truth_pt = truth_jets[minIndex].pt();
           truth_2d_histo->Fill(NPV, sub_jets[i].pt() - truth_pt);
           if(truth_pt > TRUTH_DIF_A && truth_pt < TRUTH_DIF_B) {
+            cout << "MATCH: " << "jet phi = " << sub_jets[i].phi() << "; jet eta = " << sub_jets[i].rapidity() << " truth phi = " << truth_jets[minIndex].phi() << "; truth eta = " << truth_jets[minIndex].rapidity() << "; min = " << min << endl;
             truth_histo_a->Fill(sub_jets[i].pt() - truth_pt);
           }
           if(truth_pt > TRUTH_DIF_B && truth_pt < TRUTH_DIF_C) {
+            cout << "MATCH: " << "jet phi = " << sub_jets[i].phi() << "; jet eta = " << sub_jets[i].rapidity() << " truth phi = " << truth_jets[minIndex].phi() << "; truth eta = " << truth_jets[minIndex].rapidity() << "; min = " << min << endl;
             truth_histo_b->Fill(sub_jets[i].pt() - truth_pt);
           }
           //cout << "difference is " << sub_jets[i].pt() - truth_pt << endl;
@@ -393,7 +412,6 @@ void LightJetAnalysis::Analyze()
 
   exit(1);*/
 
-  if(NPV > 20) cout << "NPV = " << NPV << endl;
 
   double rho;
   double sigma;
@@ -424,6 +442,8 @@ void LightJetAnalysis::Analyze()
     arr[index].nevents++;
     arr[index].total_jets += njets_x;  //here
   }
+
+ // cout << "NPV = " << NPV << "; NJets = " << sub_jets.size() << "; rho = " << rho << endl;
 
 
 }

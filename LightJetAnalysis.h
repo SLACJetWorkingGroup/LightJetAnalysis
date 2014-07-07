@@ -27,6 +27,13 @@ typedef struct {
     double total_jets;
 } bin;
 
+/*typedef struct {
+    float pt;
+    float eta;
+    float pt_t;
+    float eta_t;
+} match; */
+
 class LightJetAnalysis : public LightJetAnalysisBase {
     public:
         LightJetAnalysis (TTree *tree);
