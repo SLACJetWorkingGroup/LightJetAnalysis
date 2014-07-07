@@ -50,6 +50,7 @@ class LightJetAnalysis : public LightJetAnalysisBase {
         TH2F* truth_2d_histo;
         TH1F* truth_histo_a;
         TH1F* truth_histo_b;
+        TH1F* jet_areas;
         inline void init_rho_hist();
         inline void init_sigma_hist();
         TH1F* init_jet_hist(int min_pt);
