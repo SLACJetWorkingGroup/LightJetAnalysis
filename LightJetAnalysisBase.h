@@ -1,8 +1,8 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed Jul  2 11:07:09 2014 by ROOT version 5.34/17
+// Mon Jul  7 10:59:20 2014 by ROOT version 5.34/17
 // from TTree EventTree/Tree with event-by-event variables
-// found on file: /atlas/output/pnef/skimmed.20140701.11.56_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root
+// found on file: /atlas/output/pnef/20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root
 //////////////////////////////////////////////////////////
 
 #ifndef LightJetAnalysisBase_h
@@ -29,21 +29,21 @@ public :
    Int_t           NPVtruth;
    Int_t           NPV;
    Int_t           cl_lc_n;
-   Float_t         cl_lc_px[2000];   //[cl_lc_n]       //changed all arrays capacity (1530 or 1000) -> (2000)
-   Float_t         cl_lc_py[2000];   //[cl_lc_n]
-   Float_t         cl_lc_pz[2000];   //[cl_lc_n]
-   Float_t         cl_lc_E[2000];   //[cl_lc_n]
+   Float_t         cl_lc_px[1543];   //[cl_lc_n]
+   Float_t         cl_lc_py[1543];   //[cl_lc_n]
+   Float_t         cl_lc_pz[1543];   //[cl_lc_n]
+   Float_t         cl_lc_E[1543];   //[cl_lc_n]
    Int_t           cl_em_n;
-   Float_t         cl_em_px[2000];   //[cl_em_n]
-   Float_t         cl_em_py[2000];   //[cl_em_n]
-   Float_t         cl_em_pz[2000];   //[cl_em_n]
-   Float_t         cl_em_E[2000];   //[cl_em_n]
+   Float_t         cl_em_px[1543];   //[cl_em_n]
+   Float_t         cl_em_py[1543];   //[cl_em_n]
+   Float_t         cl_em_pz[1543];   //[cl_em_n]
+   Float_t         cl_em_E[1543];   //[cl_em_n]
    Int_t           truth_n;
-   Float_t         truth_px[2000];   //[truth_n]
-   Float_t         truth_py[2000];   //[truth_n]
-   Float_t         truth_pz[2000];   //[truth_n]
-   Float_t         truth_E[2000];   //[truth_n]
-   Float_t         truth_id[2000];   //[truth_n]
+   Float_t         truth_px[1000];   //[truth_n]
+   Float_t         truth_py[1000];   //[truth_n]
+   Float_t         truth_pz[1000];   //[truth_n]
+   Float_t         truth_E[1000];   //[truth_n]
+   Float_t         truth_id[1000];   //[truth_n]
 
    // List of branches
    TBranch        *b_EventNumber;   //!
@@ -88,9 +88,9 @@ LightJetAnalysisBase::LightJetAnalysisBase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/atlas/output/pnef/skimmed.20140701.11.56_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/atlas/output/pnef/20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/atlas/output/pnef/skimmed.20140701.11.56_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root");
+         f = new TFile("/atlas/output/pnef/20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root");
       }
       f->GetObject("EventTree",tree);
 

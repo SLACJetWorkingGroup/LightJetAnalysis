@@ -272,7 +272,7 @@ void LightJetAnalysis::Loop()
       num_clust = cl_lc_n;
       cl_E = cl_lc_E;
     }
-    for(Long64_t i = 0; i < num_clust; i++) {  //iterate through the total number of jets
+    for(int i = 0; i < num_clust; i++) {  //iterate through the total number of jets
         if(cl_E[i] >= 0){
           PseudoJet cl(cl_px[i], cl_py[i], cl_pz[i], cl_E[i]);
            clusters.push_back(cl);
@@ -308,8 +308,8 @@ void LightJetAnalysis::calc_sub_jets(double& rho, double& sigma, vector<PseudoJe
     if(!jets[i].has_area()) throw "BUG: A jet does not contain an area";
     PseudoJet sub_jet;
     double subtracted_pt = jets[i].pt() - (correction) * jets[i].area();  
-    if(subtracted_pt > min_pt) {
-      sub_jet.reset_momentum_PtYPhiM(subtracted_pt, jets[i].rapidity(), jets[i].phi_std(), jets[i].m());
+    if((signed)subtracted_pt > min_pt) {
+      sub_jet.reset_momentum_PtYPhiM(subtracted_pt, jets[i].rapidity(), jets[i].phi_std(), jets[i].m()); 
       sub_jets.push_back(sub_jet);  //subtract from original jet 
       jet_areas->Fill(jets[i].area());   //RECENT
     }
@@ -392,6 +392,8 @@ void LightJetAnalysis::Analyze()
   cout << "}" << endl;
 
   exit(1);*/
+
+  if(NPV > 20) cout << "NPV = " << NPV << endl;
 
   double rho;
   double sigma;
