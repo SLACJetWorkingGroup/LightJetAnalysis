@@ -55,9 +55,17 @@ class LightJetAnalysis : public LightJetAnalysisBase {
         TH1F* leading_jet_eta;
         TH2F* npv_histo;
         TH2F* truth_2d_histo;
+        TH2F* truth_2d_histo_b;
+        TH2F* truth_2d_histo_c;
         TH1F* truth_histo_a;
         TH1F* truth_histo_b;
+        TH1F* truth_histo_c;
+        
         TH1F* jet_areas;
+        TH1F* matched;
+        TH1F* truth;
+        TH1F* truth_proximity;
+
         inline void init_rho_hist();
         inline void init_sigma_hist();
         TH1F* init_jet_hist(int min_pt);
@@ -71,7 +79,7 @@ class LightJetAnalysis : public LightJetAnalysisBase {
         void calc_sub_jets(double& rho, double& sigma, vector<PseudoJet>& clusters, vector<PseudoJet>& sub_jets, bool isTruth);
         inline void write_npv_avg();
         int n_nontrivial_jets(vector<PseudoJet>& sub_jets);
-        inline void init_truth_hist();
+        TH2F* init_truth_hist(int min, int max);
         TH1F* get_truth_hist(int min_pt, int max_pt);
         inline void graph_truth(const vector<PseudoJet>& sub_jets, const vector<PseudoJet>& truth_jets);
         //static void inline create_jet_hist(vector<PseudoJet>& sub_jets);
