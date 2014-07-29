@@ -25,6 +25,8 @@ using namespace std;
 #define N_ANALYZED_EVENTS 1000 //this value is only necessary in the commented code
 #define DATA_FILE_NAME "/atlas/output/pnef/skimmed.20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root"
 
+///atlas/output/pnef/skimmed.20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root
+
 static inline void init(char* data_file_name, int argc, char* argv);
 
 static inline void init(char* data_file_name, int argc, char* argv) 
