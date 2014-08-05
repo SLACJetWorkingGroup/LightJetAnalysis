@@ -23,5 +23,5 @@ setup_boost() {
 setup_ROOT
 setup_fastjet
 # setup_PYTHIA
-# setup_boost
+setup_boost
 

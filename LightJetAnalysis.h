@@ -27,9 +27,9 @@ class LightJetAnalysis : public LightJetAnalysisBase {
     public:
         LightJetAnalysis (TTree *tree);
         ~LightJetAnalysis ();
-        void Begin();
+        void Begin(int fileCount); //parameter tells foo whether to erase contents of file or add to the contents
         void End();
-        void Loop();
+        void Loop(int startEvent, int endEvent);
         void Analyze();
     private:
         ofstream* ofile; 

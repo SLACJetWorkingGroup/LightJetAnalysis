@@ -88,9 +88,9 @@ LightJetAnalysisBase::LightJetAnalysisBase(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/atlas/output/pnef/20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("/u/at/pnef/Work/Data/forTodd/20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("/atlas/output/pnef/20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root");
+         f = new TFile("/u/at/pnef/Work/Data/forTodd/20140703.15.27_ClustersAndTruth.PythJ1to3mc12aJETMET.jetmet2012.root");
       }
       f->GetObject("EventTree",tree);
 

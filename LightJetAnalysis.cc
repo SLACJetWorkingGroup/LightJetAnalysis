@@ -95,10 +95,20 @@ LightJetAnalysis::~LightJetAnalysis()
 
 
 // Begin method
-void LightJetAnalysis::Begin() 
-{   
-  ofile = new ofstream;
-  ofile->open("matches.txt", ios::trunc);
+void LightJetAnalysis::Begin(int fileCount) 
+{ 
+  char buffer[30];
+  sprintf(buffer, "testing_%d.txt", fileCount);
+  ofile = new ofstream;  
+  ofile->open(buffer, ios::trunc);
+                    //change back to matches.txt and make ios::app
+  //ofile->open("testing2.txt", ios::ate);
+  /*if(isBeginning) {
+    //cout << "is beginning" << endl;
+    ofile->open("testing.txt", ios::trunc); //ios::trunc or ios::app or ios::ate
+  } else {
+    ofile->open("testing.txt", ios::app);
+  } */ 
     // create output file 
   fp_out = new TFile(OUTPUT_NAME, "UPDATE");   //"UPDATE" or "RECREATE"  
 
@@ -328,14 +338,16 @@ void LightJetAnalysis::End()
 }
 
 // loop method
-void LightJetAnalysis::Loop()
+void LightJetAnalysis::Loop(int startEvent, int endEvent)
 {
    if (fChain == 0) return;
 
    Long64_t nentries = fChain->GetEntriesFast();
    Long64_t nbytes = 0;
+
+   //cout << "total # events in file = " << nentries << endl; //as of 7/31/14, only 12815 events
    
-   for (Long64_t j = 0; j < min(nentries, (Long64_t)N_ANALYZED_EVENTS); j++) {
+   for (Long64_t j = startEvent; j < min(nentries, (Long64_t)endEvent); j++) {
       if (LoadTree(j) < 0) break;
       nbytes += fChain->GetEntry(j);
       Analyze();
